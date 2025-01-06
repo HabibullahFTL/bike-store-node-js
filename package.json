@@ -1,0 +1,19 @@
+{
+  "name": "bike-store",
+  "version": "1.0.0",
+  "main": "dist/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HabibullahFTL/bike-store-node-js.git"
+  },
+  "author": "Habibullah Bahar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HabibullahFTL/bike-store-node-js/issues"
+  },
+  "homepage": "https://github.com/HabibullahFTL/bike-store-node-js#readme",
+  "description": ""
+}
