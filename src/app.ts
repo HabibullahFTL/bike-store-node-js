@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express, { Request, Response } from 'express';
+import OrdersRouter from './modules/orders/orders.routes';
 import ProductsRouter from './modules/products/products.routes';
 import { generateResponse } from './utils/response-generator';
 
@@ -9,8 +10,9 @@ const app = express();
 // Middleware to parse incoming JSON requests
 app.use(express.json());
 
-// Mounting the product routes to the /api/v1/products endpoint
+// Mounting the routes
 app.use('/api/products/', ProductsRouter);
+app.use('/api/orders/', OrdersRouter);
 
 // Handling route not found
 app.all('*', (req: Request, res: Response) => {

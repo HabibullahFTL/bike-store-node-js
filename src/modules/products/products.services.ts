@@ -12,25 +12,21 @@ const updateProductIntoDB = async (
   productId: string,
   productData: Partial<TProduct>
 ) => {
-  try {
-    // Perform the update
-    const result = await ProductsModel.updateOne(
-      { _id: productId },
-      { $set: productData }
-    );
+  // Perform the update
+  const result = await ProductsModel.updateOne(
+    { _id: productId },
+    { $set: productData }
+  );
 
-    // Check if the product was found and updated
-    if (result.modifiedCount === 0) {
-      throw new Error('Bike not found');
-    }
-
-    // Optionally, retrieve the updated product
-    const updatedProduct = await ProductsModel.findById(productId);
-
-    return updatedProduct;
-  } catch (error) {
-    throw error;
+  // Check if the product was found and updated
+  if (result.modifiedCount === 0) {
+    throw new Error('Bike not found');
   }
+
+  // Optionally, retrieve the updated product
+  const updatedProduct = await ProductsModel.findById(productId);
+
+  return updatedProduct;
 };
 
 // For getting all the products from database
