@@ -165,9 +165,7 @@ const getSingleProduct = async (req: Request, res: Response) => {
     // Getting product id
     const productId = req.params.productId?.toString().trim();
 
-    // Retrieving a bike
-    const product = await ProductServices.getSingleProductFromDB(productId);
-
+    // Generating & sending error message if the product ID is not valid
     if (!ObjectId.isValid(productId)) {
       res.status(400).json(
         generateResponse({
@@ -175,7 +173,12 @@ const getSingleProduct = async (req: Request, res: Response) => {
           message: 'Invalid product ID format',
         })
       );
-    } else if (!product) {
+    }
+
+    // Retrieving a bike
+    const product = await ProductServices.getSingleProductFromDB(productId);
+
+    if (!product) {
       // Handling if no product found
       const error = new Error('No bike found');
       // Sending an error response
@@ -210,11 +213,66 @@ const getSingleProduct = async (req: Request, res: Response) => {
   }
 };
 
+// Delete a specific product (bike)
+const deleteProduct = async (req: Request, res: Response) => {
+  try {
+    // Getting product id
+    const productId = req.params.productId?.toString().trim();
+
+    // Generating & sending error message if the product ID is not valid
+    if (!ObjectId.isValid(productId)) {
+      res.status(400).json(
+        generateResponse({
+          success: false,
+          message: 'Invalid product ID format',
+        })
+      );
+    }
+
+    // Deleting a bike
+    const result = await ProductServices.deleteProductFromDB(productId);
+
+    if (result?.deletedCount === 1) {
+      // Sending a success response
+      res.status(200).json(
+        generateResponse({
+          success: true,
+          message: 'Bike deleted successfully',
+          data: {},
+        })
+      );
+    } else {
+      // Handling if no product was deleted
+      const error = new Error('No bike found to delete');
+
+      res.status(404).json(
+        generateResponse({
+          success: false,
+          message: error?.message,
+          stack: error?.stack,
+          error: error,
+        })
+      );
+    }
+  } catch (error) {
+    // Sending a server error response
+    res.status(500).json(
+      generateResponse({
+        success: false,
+        message: 'Failed to delete bike',
+        error: (error as Error)?.message || 'An unexpected error occurred',
+        stack: (error as Error)?.stack,
+      })
+    );
+  }
+};
+
 const ProductControllers = {
   createProduct,
   getAllProducts,
   getSingleProduct,
   updateProduct,
+  deleteProduct,
 };
 
 export default ProductControllers;

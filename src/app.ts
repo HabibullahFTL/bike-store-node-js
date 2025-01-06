@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 
 // Mounting the product routes to the /api/v1/products endpoint
-app.use('/api/v1/products/', ProductsRouter);
+app.use('/api/products/', ProductsRouter);
 
 // Handling route not found
 app.all('*', (req: Request, res: Response) => {

@@ -47,9 +47,16 @@ const getAllProductsFromDB = async (
 
 // For getting specific product (bike) from database
 const getSingleProductFromDB = async (productId: string) => {
-  // Fetch product based on the productId
-  const products = await ProductsModel.findById(productId);
-  return products;
+  const product = await ProductsModel.findById(productId);
+  return product;
+};
+
+// For deleting specific product (bike) from database
+const deleteProductFromDB = async (productId: string) => {
+  const result = await ProductsModel.deleteOne({
+    _id: productId,
+  });
+  return result;
 };
 
 const ProductServices = {
@@ -57,6 +64,7 @@ const ProductServices = {
   updateProductIntoDB,
   getAllProductsFromDB,
   getSingleProductFromDB,
+  deleteProductFromDB,
 };
 
 export default ProductServices;

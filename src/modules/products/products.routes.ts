@@ -11,5 +11,7 @@ ProductsRouter.put('/:productId', ProductControllers.updateProduct);
 ProductsRouter.get('/', ProductControllers.getAllProducts);
 // Route to get specific product
 ProductsRouter.get('/:productId', ProductControllers.getSingleProduct);
+// Route to delete specific product
+ProductsRouter.delete('/:productId', ProductControllers.deleteProduct);
 
 export default ProductsRouter;
