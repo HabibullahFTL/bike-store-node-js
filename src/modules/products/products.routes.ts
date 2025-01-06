@@ -7,5 +7,7 @@ const ProductsRouter = Router();
 ProductsRouter.post('/', ProductControllers.createProduct);
 // Route to get all products
 ProductsRouter.get('/', ProductControllers.getAllProducts);
+// Route to get specific product
+ProductsRouter.get('/:productId', ProductControllers.getSingleProduct);
 
 export default ProductsRouter;

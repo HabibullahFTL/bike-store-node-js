@@ -19,9 +19,17 @@ const getAllProductsFromDB = async (
   return products;
 };
 
+// For getting specific product (bike) from database
+const getSingleProductFromDB = async (productId: string) => {
+  // Fetch product based on the productId
+  const products = await ProductsModel.findOne({ _id: productId });
+  return products;
+};
+
 const ProductServices = {
   createProductIntoDB,
   getAllProductsFromDB,
+  getSingleProductFromDB,
 };
 
 export default ProductServices;
