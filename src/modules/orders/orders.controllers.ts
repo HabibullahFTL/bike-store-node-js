@@ -89,8 +89,45 @@ const createOrder = async (req: Request, res: Response) => {
   }
 };
 
+const getAllOrders = async (req: Request, res: Response) => {
+  try {
+    const result = await OrderServices.getAllOrdersFromDB();
+
+    res.status(200).json(
+      generateResponse({
+        success: true,
+        message: 'Retrieved all the orders',
+        data: result,
+      })
+    );
+  } catch (error) {
+    res.status(500).json(
+      generateResponse({
+        success: false,
+        message: (error as Error)?.message || 'An unexpected error occurred',
+        stack: (error as Error)?.stack,
+        error,
+      })
+    );
+  }
+};
+
+const calculateRevenue = async (req: Request, res: Response) => {
+  const result = await OrderServices.calculateRevenueFromDB();
+
+  res.status(200).json(
+    generateResponse({
+      success: true,
+      message: 'Revenue calculated successfully',
+      data: result,
+    })
+  );
+};
+
 const OrderControllers = {
   createOrder,
+  calculateRevenue,
+  getAllOrders,
 };
 
 export default OrderControllers;
