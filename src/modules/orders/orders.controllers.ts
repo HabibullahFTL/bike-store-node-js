@@ -4,6 +4,7 @@ import ProductServices from '../products/products.services';
 import OrderServices from './orders.services';
 import { orderValidationSchema } from './orders.validations';
 
+// Handles the creation of a new order
 const createOrder = async (req: Request, res: Response) => {
   try {
     const { success, data, error } = orderValidationSchema.safeParse(req.body);
@@ -89,6 +90,7 @@ const createOrder = async (req: Request, res: Response) => {
   }
 };
 
+// Retrieves a list of all orders
 const getAllOrders = async (req: Request, res: Response) => {
   try {
     const result = await OrderServices.getAllOrdersFromDB();
@@ -112,6 +114,7 @@ const getAllOrders = async (req: Request, res: Response) => {
   }
 };
 
+// Calculates and send a response of total revenue
 const calculateRevenue = async (req: Request, res: Response) => {
   const result = await OrderServices.calculateRevenueFromDB();
 
