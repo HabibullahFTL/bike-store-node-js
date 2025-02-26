@@ -73,7 +73,7 @@ const refreshToken = catchAsync(async (req, res) => {
   );
 
   // Retrieving user data based on email
-  const user = await UserModel.isUserExists(verifiedTokenPayload.email);
+  const user = await UserModel.userDataById(verifiedTokenPayload._id);
 
   // Checking user found or not
   if (!user || (user && user?.isDeleted)) {
@@ -87,15 +87,11 @@ const refreshToken = catchAsync(async (req, res) => {
     throw new Error('Your account is blocked.');
   }
 
-  // Checking refresh token issued before password change or not
-  const passwordChangedAt = user?.passwordChangedAt
-    ? new Date(user?.passwordChangedAt).getTime() / 1000
-    : 0;
-  const tokenIssuedAt = verifiedTokenPayload.iat || 0;
-
-  if (passwordChangedAt > tokenIssuedAt) {
-    throw new Error('Invalid refresh token.');
-  }
+  // It will throw an error if the token is issued before password changed
+  UserModel.isJWTIssuedBeforePasswordChanged(
+    user?.passwordChangedAt!,
+    verifiedTokenPayload.iat!
+  );
 
   // Generating access token
   const access_token = generateJwtToken(user, 'access');

@@ -72,7 +72,7 @@ userSchema.post('save', async function () {
   return this;
 });
 
-// Static function for checking is user already exists or not
+// For checking is user already exists or not
 userSchema.static(
   'isUserExists',
   async function (email: string, shouldIncludePassword: boolean) {
@@ -89,6 +89,42 @@ userSchema.static(
     }
 
     return user;
+  }
+);
+
+// For getting user data by id
+userSchema.static(
+  'userDataById',
+  async function (userId: string, shouldIncludePassword: boolean) {
+    // Constructing query
+    const userQuery = this.findById(userId);
+
+    let user: TUser | null;
+
+    // Executing query based on condition
+    if (shouldIncludePassword) {
+      user = await userQuery.select('+password');
+    } else {
+      user = await userQuery;
+    }
+
+    return user;
+  }
+);
+
+// For checking is JWT token issued before password changed
+userSchema.static(
+  'isJWTIssuedBeforePasswordChanged',
+  function (passwordChangedAt: string, iat: number) {
+    // Checking refresh token issued before password change or not
+    const passwordChangedAtTime = passwordChangedAt
+      ? new Date(passwordChangedAt).getTime() / 1000
+      : 0;
+    const tokenIssuedAt = iat || 0;
+
+    if (passwordChangedAtTime > tokenIssuedAt) {
+      throw new Error('Invalid refresh token.');
+    }
   }
 );
 

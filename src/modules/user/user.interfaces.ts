@@ -22,8 +22,13 @@ export interface TUser extends Pick<TCreateUser, 'name' | 'email'> {
 }
 
 export interface TUserModel extends Model<TUser> {
+  userDataById: (id: string, shouldIncludePassword?: boolean) => TUser | null;
   isUserExists: (
     email: string,
     shouldIncludePassword?: boolean
   ) => TUser | null;
+  isJWTIssuedBeforePasswordChanged: (
+    passwordChangedAt: string,
+    iat: number
+  ) => void;
 }
