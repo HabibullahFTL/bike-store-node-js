@@ -1,6 +1,5 @@
-import bcrypt from 'bcryptjs';
 import { model, Schema } from 'mongoose';
-import { config } from '../../config';
+import { hashPassword } from '../auth/auth.utils';
 import { USER_ROLES, USER_STATUS } from './user.constrants';
 import { TUser, TUserModel } from './user.interfaces';
 
@@ -56,11 +55,11 @@ userSchema.pre('save', async function () {
   }
 
   // Hashing password
-  const hashedPassword = await bcrypt.hash(this.password, config.password_salt);
+  const hashedPassword = await hashPassword(this.password);
 
   // Swapping the hashed password
   this.password = hashedPassword;
-  return this;
+  return this as TUser;
 });
 
 // Post middleware which will run after saving

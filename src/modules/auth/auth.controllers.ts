@@ -2,37 +2,16 @@ import ms from 'ms';
 import { config } from '../../config';
 import { catchAsync } from '../../utils/catchAsync';
 import { generateResponse } from '../../utils/response-generator';
-import UserModel from '../user/user.model';
 import { refreshTokenName } from './auth.constrants';
-import {
-  checkPasswordMatchedAndThrowError,
-  generateJwtToken,
-  verifyJwtToken,
-} from './auth.utils';
+import AuthServices from './auth.services';
 
 // Handles logging in user
 const loginUser = catchAsync(async (req, res) => {
-  // Retrieving user data based on email
-  const user = await UserModel.isUserExists(req.body.email, true);
-
-  // Checking user found or not and deleted or not
-  if (!user || (user && user?.isDeleted)) {
-    throw new Error(
-      user?.isDeleted ? 'Your account is deleted.' : 'No user found.'
-    );
-  }
-
-  // Throwing error if password does not match
-  await checkPasswordMatchedAndThrowError(req.body.password, user?.password!);
-
-  // Throwing error if user is blocked
-  if (user?.status === 'blocked') {
-    throw new Error('Your account is blocked.');
-  }
-
-  // Generating tokens
-  const access_token = generateJwtToken(user, 'access');
-  const refresh_token = generateJwtToken(user, 'refresh');
+  // Calling login service
+  const { user, refresh_token, access_token } = await AuthServices.login(
+    req.body?.email,
+    req.body?.password
+  );
 
   // Setting the refresh token to cookie
   res.cookie(refreshTokenName, refresh_token, {
@@ -57,44 +36,25 @@ const loginUser = catchAsync(async (req, res) => {
 
 // Handles changing password
 const changePassword = catchAsync(async (req, res) => {
-  console.log({ data: req.body, userData: req.user });
+  const modifiedUserData = await AuthServices.changePasswordIntoDB(
+    req?.user?._id!,
+    req?.body
+  );
 
-  res.json({
-    message: 'Password changed',
-  });
+  res.json(
+    generateResponse({
+      success: true,
+      message: 'Password changed successfully.',
+      data: modifiedUserData,
+    })
+  );
 });
 
 // Handles generating new access token
 const refreshToken = catchAsync(async (req, res) => {
-  // Verifying refresh token
-  const verifiedTokenPayload = verifyJwtToken(
-    req?.cookies?.[refreshTokenName]!,
-    'refresh'
+  const { access_token } = await AuthServices.getAccessToken(
+    req?.cookies?.[refreshTokenName]!
   );
-
-  // Retrieving user data based on email
-  const user = await UserModel.userDataById(verifiedTokenPayload._id);
-
-  // Checking user found or not
-  if (!user || (user && user?.isDeleted)) {
-    throw new Error(
-      user?.isDeleted ? 'Your account is deleted.' : 'No user found.'
-    );
-  }
-
-  // Throwing error if user is blocked
-  if (user?.status === 'blocked') {
-    throw new Error('Your account is blocked.');
-  }
-
-  // It will throw an error if the token is issued before password changed
-  UserModel.isJWTIssuedBeforePasswordChanged(
-    user?.passwordChangedAt!,
-    verifiedTokenPayload.iat!
-  );
-
-  // Generating access token
-  const access_token = generateJwtToken(user, 'access');
 
   res.json(
     generateResponse({

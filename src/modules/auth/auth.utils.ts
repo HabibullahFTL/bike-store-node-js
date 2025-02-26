@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import ms from 'ms';
+import { config } from '../../config';
 import { TUser } from '../user/user.interfaces';
 import { tokenExpiresIn, tokenSecret } from './auth.constrants';
 import { TokenType } from './auth.interfaces';
@@ -40,4 +41,10 @@ export const checkPasswordMatchedAndThrowError = async (
   if (!isPasswordMatched) {
     throw new Error('Password does not match.');
   }
+};
+
+// Hash password
+export const hashPassword = async (password: string) => {
+  const hashedPassword = await bcrypt.hash(password, config.password_salt);
+  return hashedPassword;
 };

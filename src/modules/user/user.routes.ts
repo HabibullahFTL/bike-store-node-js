@@ -19,6 +19,6 @@ UserRouter.post(
 UserRouter.post('/customer-registration', UserControllers.customerRegistration);
 
 // For retrieving all the users
-UserRouter.get('/', UserControllers.getAllUsers);
+UserRouter.get('/', authGuard(USER_ROLES.ADMIN), UserControllers.getAllUsers);
 
 export default UserRouter;
