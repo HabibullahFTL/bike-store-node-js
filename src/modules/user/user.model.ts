@@ -2,10 +2,10 @@ import bcrypt from 'bcryptjs';
 import { model, Schema } from 'mongoose';
 import { config } from '../../config';
 import { USER_ROLES, USER_STATUS } from './user.constrants';
-import { TUser } from './user.interfaces';
+import { TUser, TUserModel } from './user.interfaces';
 
 // User Schema
-const userSchema = new Schema<TUser>(
+const userSchema = new Schema<TUser, TUserModel>(
   {
     name: {
       type: String,
@@ -45,9 +45,7 @@ const userSchema = new Schema<TUser>(
       default: false,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 // Pre middleware which will run before saving
@@ -74,7 +72,27 @@ userSchema.post('save', async function () {
   return this;
 });
 
+// Static function for checking is user already exists or not
+userSchema.static(
+  'isUserExists',
+  async function (email: string, shouldIncludePassword: boolean) {
+    // Constructing query
+    const userQuery = this.findOne({ email });
+
+    let user: TUser | null;
+
+    // Executing query based on condition
+    if (shouldIncludePassword) {
+      user = await userQuery.select('+password');
+    } else {
+      user = await userQuery;
+    }
+
+    return user;
+  }
+);
+
 // User model
-const UserModel = model<TUser>('User', userSchema);
+const UserModel = model<TUser, TUserModel>('User', userSchema);
 
 export default UserModel;

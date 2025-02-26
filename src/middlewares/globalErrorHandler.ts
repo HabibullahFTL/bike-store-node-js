@@ -5,7 +5,7 @@ const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
   res.json(
     generateResponse({
       success: false,
-      message: 'Got an error',
+      message: error?.message || 'Got an error',
       error,
     })
   );

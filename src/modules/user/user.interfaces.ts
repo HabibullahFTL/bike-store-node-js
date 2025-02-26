@@ -1,3 +1,4 @@
+import { Model } from 'mongoose';
 import { z } from 'zod';
 import { USER_ROLES, USER_STATUS } from './user.constrants';
 import { createUserValidation } from './user.validations';
@@ -18,4 +19,11 @@ export interface TUser extends Pick<TCreateUser, 'name' | 'email'> {
 
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TUserModel extends Model<TUser> {
+  isUserExists: (
+    email: string,
+    shouldIncludePassword?: boolean
+  ) => TUser | null;
 }
