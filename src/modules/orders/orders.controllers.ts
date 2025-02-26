@@ -98,7 +98,7 @@ const getAllOrders = async (req: Request, res: Response) => {
     res.status(200).json(
       generateResponse({
         success: true,
-        message: 'Retrieved all the orders',
+        message: 'Retrieved all the orders.',
         data: result,
       })
     );

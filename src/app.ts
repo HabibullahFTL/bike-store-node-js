@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express, { Request, Response } from 'express';
-import OrdersRouter from './modules/orders/orders.routes';
-import ProductsRouter from './modules/products/products.routes';
+import globalErrorHandler from './middlewares/globalErrorHandler';
+import APIRouter from './routes';
 import { generateResponse } from './utils/response-generator';
 
 // Initialize the express application
@@ -11,8 +11,7 @@ const app = express();
 app.use(express.json());
 
 // Mounting the routes
-app.use('/api/products/', ProductsRouter);
-app.use('/api/orders/', OrdersRouter);
+app.use('/api', APIRouter);
 
 // Handling route not found
 app.all('*', (req: Request, res: Response) => {
@@ -27,6 +26,9 @@ app.all('*', (req: Request, res: Response) => {
     })
   );
 });
+
+// Handling error in global error handler
+app.use(globalErrorHandler);
 
 // Export the app for use in server configuration
 export default app;
