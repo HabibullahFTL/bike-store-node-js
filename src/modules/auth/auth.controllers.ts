@@ -57,7 +57,7 @@ const loginUser = catchAsync(async (req, res) => {
 
 // Handles changing password
 const changePassword = catchAsync(async (req, res) => {
-  console.log({ data: req.body });
+  console.log({ data: req.body, userData: req.user });
 
   res.json({
     message: 'Password changed',

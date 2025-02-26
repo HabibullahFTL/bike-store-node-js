@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import auth from '../../middlewares/auth';
+import authGuard from '../../middlewares/authGuard';
 import { validateRequest } from '../../middlewares/validateRequest';
 import { USER_ROLES } from './user.constrants';
 import UserControllers from './user.controllers';
@@ -10,7 +10,7 @@ const UserRouter = Router();
 // For create a new admin
 UserRouter.post(
   '/create-admin',
-  auth(USER_ROLES.ADMIN),
+  authGuard(USER_ROLES.ADMIN),
   validateRequest(createUserValidation),
   UserControllers.createAdmin
 );

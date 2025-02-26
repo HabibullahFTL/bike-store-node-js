@@ -2,9 +2,10 @@ import { NextFunction, Request, Response } from 'express';
 import { verifyJwtToken } from '../modules/auth/auth.utils';
 import { TUserRole } from '../modules/user/user.interfaces';
 import UserModel from '../modules/user/user.model';
+import { catchAsync } from '../utils/catchAsync';
 
-const auth = (...userRoles: TUserRole[]) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+const authGuard = (...userRoles: TUserRole[]) => {
+  return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     // Extracting access token
     const access_token = req?.headers?.authorization?.split('Bearer ')?.[1];
 
@@ -54,7 +55,7 @@ const auth = (...userRoles: TUserRole[]) => {
     };
     req.user = formattedUser;
     next();
-  };
+  });
 };
 
-export default auth;
+export default authGuard;
