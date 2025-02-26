@@ -1,14 +1,12 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import ms from 'ms';
-import { config } from '../../config';
 import { TUser } from '../user/user.interfaces';
+import { tokenExpiresIn, tokenSecret } from './auth.constrants';
+import { TokenType } from './auth.interfaces';
 
 // Generating tokens
-export const generateJwtToken = (
-  user: TUser | null,
-  tokenType: 'access' | 'refresh'
-) => {
+export const generateJwtToken = (user: TUser | null, tokenType: TokenType) => {
   // Payload for token
   const tokenPayload: Pick<TUser, '_id' | 'email' | 'role'> = {
     _id: user?._id!,
@@ -16,21 +14,14 @@ export const generateJwtToken = (
     role: user?.role!,
   };
 
-  // Secrets based on token type
-  const secret = {
-    access: config.jwt_access_token_secret!,
-    refresh: config.jwt_refresh_token_secret!,
-  };
-
-  // ExpiresIns based on token type
-  const expiresIn = {
-    access: config.jwt_access_token_expires_in!,
-    refresh: config.jwt_refresh_token_expires_in!,
-  };
-
-  return jwt.sign(tokenPayload, secret?.[tokenType], {
-    expiresIn: expiresIn?.[tokenType] as ms.StringValue,
+  return jwt.sign(tokenPayload, tokenSecret?.[tokenType], {
+    expiresIn: tokenExpiresIn?.[tokenType] as ms.StringValue,
   });
+};
+
+// Verifying JWT token
+export const verifyJwtToken = (token: string, tokenType: TokenType) => {
+  return jwt.verify(token, tokenSecret?.[tokenType]) as JwtPayload;
 };
 
 // Check password matched or not, if not, throws an error

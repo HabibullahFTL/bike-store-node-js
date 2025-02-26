@@ -1,21 +1,25 @@
-import { RequestHandler } from 'express';
 import ms from 'ms';
 import { config } from '../../config';
 import { catchAsync } from '../../utils/catchAsync';
 import { generateResponse } from '../../utils/response-generator';
 import UserModel from '../user/user.model';
+import { refreshTokenName } from './auth.constrants';
 import {
   checkPasswordMatchedAndThrowError,
   generateJwtToken,
+  verifyJwtToken,
 } from './auth.utils';
 
-const loginUser: RequestHandler = catchAsync(async (req, res) => {
+// Handles logging in user
+const loginUser = catchAsync(async (req, res) => {
   // Retrieving user data based on email
   const user = await UserModel.isUserExists(req.body.email, true);
 
-  // Checking user found or not
+  // Checking user found or not and deleted or not
   if (!user || (user && user?.isDeleted)) {
-    throw new Error('No user found.');
+    throw new Error(
+      user?.isDeleted ? 'Your account is deleted.' : 'No user found.'
+    );
   }
 
   // Throwing error if password does not match
@@ -31,7 +35,7 @@ const loginUser: RequestHandler = catchAsync(async (req, res) => {
   const refresh_token = generateJwtToken(user, 'refresh');
 
   // Setting the refresh token to cookie
-  res.cookie('refresh_token', refresh_token, {
+  res.cookie(refreshTokenName, refresh_token, {
     secure: config.NODE_ENV === 'production',
     httpOnly: true,
     maxAge: ms(config.jwt_refresh_token_expires_in! as ms.StringValue),
@@ -51,6 +55,60 @@ const loginUser: RequestHandler = catchAsync(async (req, res) => {
   );
 });
 
-const AuthControllers = { loginUser };
+// Handles changing password
+const changePassword = catchAsync(async (req, res) => {
+  console.log({ data: req.body });
+
+  res.json({
+    message: 'Password changed',
+  });
+});
+
+// Handles generating new access token
+const refreshToken = catchAsync(async (req, res) => {
+  // Verifying refresh token
+  const verifiedTokenPayload = verifyJwtToken(
+    req?.cookies?.[refreshTokenName]!,
+    'refresh'
+  );
+
+  // Retrieving user data based on email
+  const user = await UserModel.isUserExists(verifiedTokenPayload.email);
+
+  // Checking user found or not
+  if (!user || (user && user?.isDeleted)) {
+    throw new Error(
+      user?.isDeleted ? 'Your account is deleted.' : 'No user found.'
+    );
+  }
+
+  // Throwing error if user is blocked
+  if (user?.status === 'blocked') {
+    throw new Error('Your account is blocked.');
+  }
+
+  // Checking refresh token issued before password change or not
+  const passwordChangedAt = user?.passwordChangedAt
+    ? new Date(user?.passwordChangedAt).getTime() / 1000
+    : 0;
+  const tokenIssuedAt = verifiedTokenPayload.iat || 0;
+
+  if (passwordChangedAt > tokenIssuedAt) {
+    throw new Error('Invalid refresh token.');
+  }
+
+  // Generating access token
+  const access_token = generateJwtToken(user, 'access');
+
+  res.json(
+    generateResponse({
+      success: true,
+      message: 'Generated access token successfully.',
+      data: { access_token },
+    })
+  );
+});
+
+const AuthControllers = { loginUser, changePassword, refreshToken };
 
 export default AuthControllers;

@@ -1,3 +1,4 @@
+import cookieParser from 'cookie-parser';
 import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import globalErrorHandler from './middlewares/globalErrorHandler';
@@ -9,6 +10,7 @@ const app = express();
 
 // Middleware to parse incoming JSON requests
 app.use(express.json());
+app.use(cookieParser());
 
 // Mounting the routes
 app.use('/api', APIRouter);
