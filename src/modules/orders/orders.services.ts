@@ -1,3 +1,5 @@
+import httpStatus from 'http-status';
+import AppError from '../../errors/appError';
 import ProductsModel from '../products/products.model';
 import { TOrder } from './orders.interfaces';
 import OrderModel from './orders.model';
@@ -17,7 +19,10 @@ const createOrderInDB = async (orderData: TOrder) => {
 
   // If product quantity is insufficient
   if (!productData) {
-    throw new Error('Insufficient stock or product not found');
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Insufficient stock or product not found'
+    );
   }
 
   // If the quantity is zero or less than zero of previously updated product data, updating quantity with inStock field

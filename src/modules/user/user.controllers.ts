@@ -25,6 +25,9 @@ const createAdmin = catchAsync(async (req, res) => {
 // Handle registration of customer
 const customerRegistration: RequestHandler = catchAsync(async (req, res) => {
   const userData = req.body;
+
+  console.log({ userData });
+
   const customerData = await UserServices.createUserIntoDB(
     userData,
     USER_ROLES.CUSTOMER

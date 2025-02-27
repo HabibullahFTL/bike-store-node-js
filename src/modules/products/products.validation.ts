@@ -7,7 +7,7 @@ export const categoryArray: ['Mountain', 'Road', 'Hybrid', 'Electric'] = [
   'Electric',
 ];
 
-export const productValidationSchema = z.object({
+const productDataValidationSchema = z.object({
   name: z
     .string({ required_error: 'Product name is required' })
     .min(2, 'Product name must be at least 2 characters')
@@ -26,4 +26,12 @@ export const productValidationSchema = z.object({
     .number({ required_error: 'Quantity is required' })
     .nonnegative('Quantity must be a non-negative number'),
   inStock: z.boolean().default(true),
+});
+
+export const productValidationSchema = z.object({
+  body: productDataValidationSchema,
+});
+
+export const updateProductValidationSchema = z.object({
+  body: productDataValidationSchema.partial(),
 });

@@ -1,8 +1,13 @@
 import { Request, Response } from 'express';
+import httpStatus from 'http-status';
 import { ObjectId } from 'mongodb';
+import AppError from '../../errors/appError';
 import { generateResponse } from '../../utils/response-generator';
 import ProductServices from './products.services';
-import { productValidationSchema } from './products.validation';
+import {
+  productValidationSchema,
+  updateProductValidationSchema,
+} from './products.validation';
 
 // Handles the creation of a new product (bike)
 const createProduct = async (req: Request, res: Response) => {
@@ -12,12 +17,12 @@ const createProduct = async (req: Request, res: Response) => {
       success,
       data: validatedData,
       error,
-    } = productValidationSchema.safeParse(req.body);
+    } = productValidationSchema.safeParse(req);
 
     if (success && validatedData) {
       // Creating product using the service
       const productData = await ProductServices.createProductIntoDB(
-        validatedData
+        validatedData.body
       );
 
       // Sending a success response
@@ -63,17 +68,17 @@ const updateProduct = async (req: Request, res: Response) => {
       success,
       data: validatedData,
       error,
-    } = productValidationSchema.partial().safeParse(req.body);
+    } = updateProductValidationSchema.safeParse(req);
 
     if (success && validatedData) {
       // Updating product using the service
       const updatedProduct = await ProductServices.updateProductIntoDB(
         productId,
-        validatedData
+        validatedData?.body!
       );
 
       if (!updatedProduct) {
-        const error = new Error('Product not found');
+        const error = new AppError(httpStatus.NOT_FOUND, 'Product not found');
         res.status(404).json(
           generateResponse({
             success: false,
@@ -180,7 +185,7 @@ const getSingleProduct = async (req: Request, res: Response) => {
 
     if (!product) {
       // Handling if no product found
-      const error = new Error('No bike found');
+      const error = new AppError(httpStatus.NOT_FOUND, 'No bike found');
       // Sending an error response
       res.status(404).json(
         generateResponse({
@@ -243,7 +248,10 @@ const deleteProduct = async (req: Request, res: Response) => {
       );
     } else {
       // Handling if no product was deleted
-      const error = new Error('No bike found to delete');
+      const error = new AppError(
+        httpStatus.NOT_FOUND,
+        'No bike found to delete'
+      );
 
       res.status(404).json(
         generateResponse({

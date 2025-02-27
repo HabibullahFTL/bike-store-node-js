@@ -1,7 +1,9 @@
 import bcrypt from 'bcryptjs';
+import httpStatus from 'http-status';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import ms from 'ms';
 import { config } from '../../config';
+import AppError from '../../errors/appError';
 import { TUser } from '../user/user.interfaces';
 import { tokenExpiresIn, tokenSecret } from './auth.constrants';
 import { TokenType } from './auth.interfaces';
@@ -31,7 +33,7 @@ export const checkPasswordMatchedAndThrowError = async (
   hashedPassword: string
 ) => {
   if (!password || !hashedPassword) {
-    throw new Error('Invalid inputs.');
+    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid inputs.');
   }
 
   // Comparing given password with hashed password
@@ -39,7 +41,7 @@ export const checkPasswordMatchedAndThrowError = async (
 
   // Throwing error if password does not match
   if (!isPasswordMatched) {
-    throw new Error('Password does not match.');
+    throw new AppError(httpStatus.UNAUTHORIZED, 'Password does not match.');
   }
 };
 

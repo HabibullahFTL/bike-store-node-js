@@ -1,4 +1,6 @@
+import httpStatus from 'http-status';
 import { model, Schema } from 'mongoose';
+import AppError from '../../errors/appError';
 import { hashPassword } from '../auth/auth.utils';
 import { USER_ROLES, USER_STATUS } from './user.constrants';
 import { TUser, TUserModel } from './user.interfaces';
@@ -51,7 +53,7 @@ const userSchema = new Schema<TUser, TUserModel>(
 userSchema.pre('save', async function () {
   // Throwing error if no password
   if (!this.password) {
-    throw new Error('Password is required');
+    throw new AppError(httpStatus.BAD_REQUEST, 'Password is required');
   }
 
   // Hashing password
@@ -122,7 +124,7 @@ userSchema.static(
     const tokenIssuedAt = iat || 0;
 
     if (passwordChangedAtTime > tokenIssuedAt) {
-      throw new Error('Invalid refresh token.');
+      throw new AppError(httpStatus.UNAUTHORIZED, 'Invalid refresh token.');
     }
   }
 );

@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import httpStatus from 'http-status';
+import AppError from '../../errors/appError';
 import { generateResponse } from '../../utils/response-generator';
 import ProductServices from '../products/products.services';
 import OrderServices from './orders.services';
@@ -17,7 +19,10 @@ const createOrder = async (req: Request, res: Response) => {
 
       // If no product is found, sending an error
       if (!productData) {
-        const error = new Error('Product is not found');
+        const error = new AppError(
+          httpStatus.NOT_FOUND,
+          'Product is not found'
+        );
         res.status(404).json(
           generateResponse({
             success: false,
@@ -30,7 +35,10 @@ const createOrder = async (req: Request, res: Response) => {
 
       // If there is no stock available sending an error
       if (productData && productData?.quantity <= 0) {
-        const error = new Error('No stock available for this product');
+        const error = new AppError(
+          httpStatus.BAD_REQUEST,
+          'No stock available for this product'
+        );
         res.status(400).json(
           generateResponse({
             success: false,
@@ -55,7 +63,10 @@ const createOrder = async (req: Request, res: Response) => {
         );
       } else {
         // Sending an error if the order data is not found
-        const error = new Error('Failed to create order');
+        const error = new AppError(
+          httpStatus.BAD_REQUEST,
+          'Failed to create order'
+        );
 
         res.status(400).json(
           generateResponse({

@@ -1,4 +1,6 @@
+import httpStatus from 'http-status';
 import { z } from 'zod';
+import AppError from '../../errors/appError';
 import UserModel from '../user/user.model';
 import {
   checkPasswordMatchedAndThrowError,
@@ -14,7 +16,8 @@ const login = async (email: string, password: string) => {
 
   // Checking user found or not and deleted or not
   if (!user || (user && user?.isDeleted)) {
-    throw new Error(
+    throw new AppError(
+      user?.isDeleted ? httpStatus.BAD_REQUEST : httpStatus.NOT_FOUND,
       user?.isDeleted ? 'Your account is deleted.' : 'No user found.'
     );
   }
@@ -24,7 +27,7 @@ const login = async (email: string, password: string) => {
 
   // Throwing error if user is blocked
   if (user?.status === 'blocked') {
-    throw new Error('Your account is blocked.');
+    throw new AppError(httpStatus.UNAUTHORIZED, 'Your account is blocked.');
   }
 
   // Generating tokens
@@ -42,7 +45,8 @@ const changePasswordIntoDB = async (
 
   // Checking user found or not and deleted or not
   if (!user || (user && user?.isDeleted)) {
-    throw new Error(
+    throw new AppError(
+      user?.isDeleted ? httpStatus.BAD_REQUEST : httpStatus.NOT_FOUND,
       user?.isDeleted ? 'Your account is deleted.' : 'No user found.'
     );
   }
@@ -55,7 +59,7 @@ const changePasswordIntoDB = async (
 
   // Throwing error if user is blocked
   if (user?.status === 'blocked') {
-    throw new Error('Your account is blocked.');
+    throw new AppError(httpStatus.UNAUTHORIZED, 'Your account is blocked.');
   }
 
   // Hashing new password
@@ -79,14 +83,15 @@ const getAccessToken = async (refreshToken: string) => {
 
   // Checking user found or not
   if (!user || (user && user?.isDeleted)) {
-    throw new Error(
+    throw new AppError(
+      user?.isDeleted ? httpStatus.BAD_REQUEST : httpStatus.NOT_FOUND,
       user?.isDeleted ? 'Your account is deleted.' : 'No user found.'
     );
   }
 
   // Throwing error if user is blocked
   if (user?.status === 'blocked') {
-    throw new Error('Your account is blocked.');
+    throw new AppError(httpStatus.UNAUTHORIZED, 'Your account is blocked.');
   }
 
   // It will throw an error if the token is issued before password changed

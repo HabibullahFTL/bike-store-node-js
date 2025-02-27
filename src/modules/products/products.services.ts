@@ -1,3 +1,5 @@
+import httpStatus from 'http-status';
+import AppError from '../../errors/appError';
 import { TProduct } from './products.interfaces';
 import ProductsModel from './products.model';
 
@@ -20,7 +22,7 @@ const updateProductIntoDB = async (
 
   // Check if the product was found and updated
   if (result.modifiedCount === 0) {
-    throw new Error('Bike not found');
+    throw new AppError(httpStatus.NOT_FOUND, 'Bike not found');
   }
 
   // Optionally, retrieve the updated product
