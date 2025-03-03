@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import AppError from '../../errors/appError';
+import AppError from '../../errors/AppError';
 import ProductsModel from '../products/products.model';
 import { TOrder } from './orders.interfaces';
 import OrderModel from './orders.model';

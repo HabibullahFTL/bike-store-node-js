@@ -3,7 +3,7 @@ import httpStatus from 'http-status';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import ms from 'ms';
 import { config } from '../../config';
-import AppError from '../../errors/appError';
+import AppError from '../../errors/AppError';
 import { TUser } from '../user/user.interfaces';
 import { tokenExpiresIn, tokenSecret } from './auth.constrants';
 import { TokenType } from './auth.interfaces';

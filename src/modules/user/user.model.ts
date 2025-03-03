@@ -1,6 +1,6 @@
 import httpStatus from 'http-status';
 import { model, Schema } from 'mongoose';
-import AppError from '../../errors/appError';
+import AppError from '../../errors/AppError';
 import { hashPassword } from '../auth/auth.utils';
 import { USER_ROLES, USER_STATUS } from './user.constrants';
 import { TUser, TUserModel } from './user.interfaces';

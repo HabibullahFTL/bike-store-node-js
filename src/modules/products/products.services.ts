@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import AppError from '../../errors/appError';
+import AppError from '../../errors/AppError';
 import { TProduct } from './products.interfaces';
 import ProductsModel from './products.model';
 
