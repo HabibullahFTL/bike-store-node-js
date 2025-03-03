@@ -1,141 +1,81 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import AppError from '../../errors/appError';
-import { generateResponse } from '../../utils/response-generator';
+import AppError from '../../errors/AppError';
+import { catchAsync } from '../../utils/catchAsync';
+import { sendResponse } from '../../utils/response-generator';
 import ProductServices from '../products/products.services';
 import OrderServices from './orders.services';
 import { orderValidationSchema } from './orders.validations';
 
 // Handles the creation of a new order
-const createOrder = async (req: Request, res: Response) => {
-  try {
-    const { success, data, error } = orderValidationSchema.safeParse(req.body);
+const createOrder = catchAsync(async (req: Request, res: Response) => {
+  const { success, data, error } = orderValidationSchema.safeParse(req.body);
 
-    if (success && data) {
-      // Fetching product data
-      const productData = await ProductServices.getSingleProductFromDB(
-        data?.product
-      );
+  if (success && data) {
+    // Fetching product data
+    const productData = await ProductServices.getSingleProductFromDB(
+      data?.product
+    );
 
-      // If no product is found, sending an error
-      if (!productData) {
-        const error = new AppError(
-          httpStatus.NOT_FOUND,
-          'Product is not found'
-        );
-        res.status(404).json(
-          generateResponse({
-            success: false,
-            message: error?.message,
-            stack: error?.stack,
-            error,
-          })
-        );
-      }
+    // If no product is found, sending an error
+    if (!productData) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Product is not found');
+    }
 
-      // If there is no stock available sending an error
-      if (productData && productData?.quantity <= 0) {
-        const error = new AppError(
-          httpStatus.BAD_REQUEST,
-          'No stock available for this product'
-        );
-        res.status(400).json(
-          generateResponse({
-            success: false,
-            message: error?.message,
-            stack: error?.stack,
-            error,
-          })
-        );
-      }
-
-      // Creating an order
-      const order = await OrderServices.createOrderInDB(data);
-
-      if (order) {
-        // Checking if order is found and then sending a success response
-        res.status(201).json(
-          generateResponse({
-            success: true,
-            message: 'Order created successfully',
-            data: order,
-          })
-        );
-      } else {
-        // Sending an error if the order data is not found
-        const error = new AppError(
-          httpStatus.BAD_REQUEST,
-          'Failed to create order'
-        );
-
-        res.status(400).json(
-          generateResponse({
-            success: false,
-            message: error?.message,
-            stack: error?.stack,
-            error,
-          })
-        );
-      }
-    } else {
-      // Sending an error if there is any validation error
-      res.status(400).json(
-        generateResponse({
-          success: false,
-          message: (error as Error)?.message,
-          stack: (error as Error)?.stack,
-          error,
-        })
+    // If there is no stock available sending an error
+    if (productData && productData?.quantity <= 0) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'No stock available for this product'
       );
     }
-  } catch (error) {
-    // Sending an error if there is any error
-    res.status(500).json(
-      generateResponse({
-        success: false,
-        message: (error as Error)?.message || 'An unexpected error occurred',
-        stack: (error as Error)?.stack,
-        error,
-      })
+
+    // Creating an order
+    const order = await OrderServices.createOrderInDB(data);
+
+    if (order) {
+      // Checking if order is found and then sending a success response
+      sendResponse(res, {
+        statusCode: httpStatus.CREATED,
+        success: true,
+        message: 'Order created successfully',
+        data: order,
+      });
+    } else {
+      // Sending an error if the order data is not found
+      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to create order');
+    }
+  } else {
+    // Sending an error if there is any validation error
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      (error as Error)?.message || 'Invalid order inputs'
     );
   }
-};
+});
 
 // Retrieves a list of all orders
-const getAllOrders = async (req: Request, res: Response) => {
-  try {
-    const result = await OrderServices.getAllOrdersFromDB();
+const getAllOrders = catchAsync(async (req: Request, res: Response) => {
+  const result = await OrderServices.getAllOrdersFromDB();
 
-    res.status(200).json(
-      generateResponse({
-        success: true,
-        message: 'Retrieved all the orders.',
-        data: result,
-      })
-    );
-  } catch (error) {
-    res.status(500).json(
-      generateResponse({
-        success: false,
-        message: (error as Error)?.message || 'An unexpected error occurred',
-        stack: (error as Error)?.stack,
-        error,
-      })
-    );
-  }
-};
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Retrieved all the orders.',
+    data: result,
+  });
+});
 
 // Calculates and send a response of total revenue
 const calculateRevenue = async (req: Request, res: Response) => {
   const result = await OrderServices.calculateRevenueFromDB();
 
-  res.status(200).json(
-    generateResponse({
-      success: true,
-      message: 'Revenue calculated successfully',
-      data: result,
-    })
-  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Revenue calculated successfully',
+    data: result,
+  });
 };
 
 const OrderControllers = {

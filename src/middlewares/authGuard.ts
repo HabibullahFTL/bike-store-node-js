@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
-import AppError from '../errors/appError';
+import AppError from '../errors/AppError';
 import { verifyJwtToken } from '../modules/auth/auth.utils';
 import { TUserRole } from '../modules/user/user.interfaces';
 import UserModel from '../modules/user/user.model';

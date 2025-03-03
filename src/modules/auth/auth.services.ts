@@ -1,6 +1,6 @@
 import httpStatus from 'http-status';
 import { z } from 'zod';
-import AppError from '../../errors/appError';
+import AppError from '../../errors/AppError';
 import UserModel from '../user/user.model';
 import {
   checkPasswordMatchedAndThrowError,

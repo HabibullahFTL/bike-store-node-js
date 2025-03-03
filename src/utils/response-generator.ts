@@ -1,19 +1,32 @@
+import { Response } from 'express';
 import { IResponse } from '../../types';
 
 export const generateResponse = <T>({
   success,
   message,
   data,
-  error,
+  errorSources,
   stack,
-}: IResponse<T> & { stack?: string }): IResponse<T> & { stack?: string } => {
+}: Omit<IResponse<T>, 'statusCode'> & { stack?: string }): Omit<
+  IResponse<T>,
+  'statusCode'
+> & { stack?: string } => {
   const isSuccess = success || false;
 
   return {
     success: isSuccess,
     message,
-    data: isSuccess ? data : undefined, // Only include `data` in success responses
-    error: isSuccess ? undefined : error || 'An unexpected error occurred', // Only include `error` in failure responses
-    stack: isSuccess ? undefined : stack, // Only include `stack` in failure responses
+    data: isSuccess ? data : undefined,
+    errorSources: isSuccess ? undefined : errorSources,
+    stack: isSuccess ? undefined : stack,
   };
+};
+
+// Handles sending response
+export const sendResponse = <T>(
+  res: Response,
+  responseData: IResponse<T> & { stack?: string }
+) => {
+  // Sending response
+  res.status(responseData?.statusCode).json(generateResponse(responseData));
 };

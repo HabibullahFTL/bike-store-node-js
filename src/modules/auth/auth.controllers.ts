@@ -1,7 +1,8 @@
+import httpStatus from 'http-status';
 import ms from 'ms';
 import { config } from '../../config';
 import { catchAsync } from '../../utils/catchAsync';
-import { generateResponse } from '../../utils/response-generator';
+import { sendResponse } from '../../utils/response-generator';
 import { refreshTokenName } from './auth.constrants';
 import AuthServices from './auth.services';
 
@@ -25,13 +26,12 @@ const loginUser = catchAsync(async (req, res) => {
   user.passwordChangedAt = undefined;
   user.isDeleted = undefined;
 
-  res.json(
-    generateResponse({
-      success: true,
-      message: 'Logged in successfully.',
-      data: { user, access_token },
-    })
-  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Logged in successfully.',
+    data: { user, access_token },
+  });
 });
 
 // Handles changing password
@@ -41,13 +41,12 @@ const changePassword = catchAsync(async (req, res) => {
     req?.body
   );
 
-  res.json(
-    generateResponse({
-      success: true,
-      message: 'Password changed successfully.',
-      data: modifiedUserData,
-    })
-  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Password changed successfully.',
+    data: modifiedUserData,
+  });
 });
 
 // Handles generating new access token
@@ -56,13 +55,12 @@ const refreshToken = catchAsync(async (req, res) => {
     req?.cookies?.[refreshTokenName]!
   );
 
-  res.json(
-    generateResponse({
-      success: true,
-      message: 'Generated access token successfully.',
-      data: { access_token },
-    })
-  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Generated access token successfully.',
+    data: { access_token },
+  });
 });
 
 const AuthControllers = { loginUser, changePassword, refreshToken };

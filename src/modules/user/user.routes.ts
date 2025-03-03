@@ -16,7 +16,11 @@ UserRouter.post(
 );
 
 // For customer registration
-UserRouter.post('/customer-registration', UserControllers.customerRegistration);
+UserRouter.post(
+  '/customer-registration',
+  validateRequest(createUserValidation),
+  UserControllers.customerRegistration
+);
 
 // For retrieving all the users
 UserRouter.get('/', authGuard(USER_ROLES.ADMIN), UserControllers.getAllUsers);

@@ -3,10 +3,9 @@ import cors from 'cors';
 import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import AppError from './errors/appError';
+import AppError from './errors/AppError';
 import globalErrorHandler from './middlewares/globalErrorHandler';
 import APIRouter from './routes';
-import { generateResponse } from './utils/response-generator';
 
 // Initialize the express application
 const app = express();
@@ -25,16 +24,7 @@ app.use('/api', APIRouter);
 
 // Handling route not found
 app.all('*', (req: Request, res: Response) => {
-  const error = new AppError(httpStatus.NOT_FOUND, 'Route not found');
-
-  res.status(404).json(
-    generateResponse({
-      success: false,
-      message: error.message,
-      error: error,
-      stack: error.stack,
-    })
-  );
+  throw new AppError(httpStatus.NOT_FOUND, 'Route not found');
 });
 
 // Handling error in global error handler

@@ -11,9 +11,11 @@
  */
 export interface IResponse<T = undefined> {
   success: boolean;
-  code?: IErrorCode | ISuccessCode;
+  statusCode: number;
   message: string;
   data?: T;
-  error?: string | object | array;
   stack?: string;
+  errorSources?: { path: string; message: string }[];
 }
+
+export type TErrorResponse<T = undefined> = Omit<IResponse<T>, 'data'>;
