@@ -5,6 +5,7 @@ export const generateResponse = <T>({
   success,
   message,
   data,
+  meta,
   errorSources,
   stack,
 }: Omit<IResponse<T>, 'statusCode'> & { stack?: string }): Omit<
@@ -17,6 +18,7 @@ export const generateResponse = <T>({
     success: isSuccess,
     message,
     data: isSuccess ? data : undefined,
+    meta: isSuccess ? meta : undefined,
     errorSources: isSuccess ? undefined : errorSources,
     stack: isSuccess ? undefined : stack,
   };

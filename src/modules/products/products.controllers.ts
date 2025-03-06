@@ -82,31 +82,70 @@ const updateProduct = catchAsync(async (req: Request, res: Response) => {
 
 // Retrieves a list of all products (bikes)
 const getAllProducts = catchAsync(async (req: Request, res: Response) => {
-  // Accepted search terms
   const validSearchTerms = ['name', 'brand', 'category'];
 
   // Getting search term & value
-  const searchTerm = (req.query.searchTerm || '')?.toString()?.trim();
-  const searchValue = (req.query.searchValue || '')?.toString()?.trim();
+  const tempSearchTerm = (req.query.searchTerm || '')?.toString()?.trim();
+  const searchTerm = validSearchTerms?.includes(tempSearchTerm)
+    ? tempSearchTerm
+    : '';
+  const searchValue = searchTerm
+    ? (req.query.searchValue || '')?.toString()?.trim()
+    : '';
 
-  // If searchTerm and searchValue are provided, fetch filtered products
-  let products;
-  if (validSearchTerms?.includes(searchTerm) && searchValue) {
-    products = await ProductServices.getAllProductsFromDB(
-      searchTerm,
-      searchValue
-    );
-  } else {
-    // If no filters provided, fetch all products
-    products = await ProductServices.getAllProductsFromDB();
-  }
+  // Getting filters
+  const category = req.query.category
+    ? req.query.category.toString().trim()
+    : undefined;
+  const brand = req.query.brand ? req.query.brand.toString().trim() : undefined;
+  const minPrice = req.query.minPrice
+    ? parseInt(req.query.minPrice.toString())
+    : undefined;
+  const maxPrice = req.query.maxPrice
+    ? parseInt(req.query.maxPrice.toString())
+    : undefined;
+  const inStock = req.query.inStock
+    ? req.query.inStock.toString() === 'true'
+    : undefined;
 
-  // Sending a success response
+  // Getting limit & page
+  const defaultLimit = 10;
+  const defaultPage = 1;
+  const limit = parseInt((req.query.limit || defaultLimit)?.toString());
+  const page = parseInt((req.query.page || defaultPage)?.toString());
+
+  // Getting sortBy & sortOrder
+  const validSortBys = ['name', 'brand', 'price', 'category', 'createdAt'];
+  const validSortOrders = ['asc', 'desc'];
+
+  const tempSortBy = (req.query.sortBy || '')?.toString()?.trim();
+  const sortBy = validSortBys?.includes(tempSortBy) ? tempSortBy : 'createdAt';
+  const tempSortOrder = (req.query.sortOrder || '')?.toString()?.trim();
+  const sortOrder = validSortOrders?.includes(tempSortOrder)
+    ? tempSortOrder
+    : 'desc';
+
+  // Fetch products with all filters
+  const results = await ProductServices.getAllProductsFromDB({
+    searchTerm,
+    searchValue,
+    category,
+    brand,
+    minPrice,
+    maxPrice,
+    inStock,
+    limit: limit || defaultLimit,
+    page: page || defaultPage,
+    sortBy,
+    sortOrder: sortOrder as 'asc' | 'desc',
+  });
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Bikes retrieved successfully',
-    data: products,
+    data: results.products,
+    meta: results.meta,
   });
 });
 

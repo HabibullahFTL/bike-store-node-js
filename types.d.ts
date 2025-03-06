@@ -14,6 +14,7 @@ export interface IResponse<T = undefined> {
   statusCode: number;
   message: string;
   data?: T;
+  meta?: { page: number; limit: number };
   stack?: string;
   errorSources?: { path: string; message: string }[];
 }

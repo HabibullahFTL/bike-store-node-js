@@ -1,6 +1,6 @@
 import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
-import { TProduct } from './products.interfaces';
+import { TProduct, TProductsQuery } from './products.interfaces';
 import ProductsModel from './products.model';
 
 // For creating product in database
@@ -32,15 +32,49 @@ const updateProductIntoDB = async (
 };
 
 // For getting all the products from database
-const getAllProductsFromDB = async (
-  searchTerm?: string,
-  searchValue?: string
-) => {
-  const query = searchTerm && searchValue ? { [searchTerm]: searchValue } : {};
+const getAllProductsFromDB = async ({
+  searchTerm,
+  searchValue,
+  category,
+  brand,
+  minPrice,
+  maxPrice,
+  inStock,
+  limit,
+  page,
+  sortBy,
+  sortOrder,
+}: TProductsQuery) => {
+  // Base query
+  const query: Record<string, any> = {};
+
+  // Apply search filtering
+  if (searchTerm && searchValue) {
+    query[searchTerm] = { $regex: searchValue, $options: 'i' };
+  }
+
+  // Apply additional filters
+  if (category) query.category = category;
+  if (brand) query.brand = brand;
+  if (minPrice !== undefined) query.price = { ...query.price, $gte: minPrice };
+  if (maxPrice !== undefined) query.price = { ...query.price, $lte: maxPrice };
+  if (inStock !== undefined) query.inStock = inStock;
+
+  const skip = (page - 1) * limit;
 
   // Fetch products based on the query
-  const products = await ProductsModel.find(query);
-  return products;
+  const products = await ProductsModel.find(query)
+    .sort({ [sortBy]: sortOrder === 'asc' ? 1 : -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const totalItems = await ProductsModel.countDocuments(query);
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return {
+    meta: { page, limit, totalItems, totalPages },
+    products,
+  };
 };
 
 // For getting specific product (bike) from database
