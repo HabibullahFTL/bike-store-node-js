@@ -82,16 +82,7 @@ const updateProduct = catchAsync(async (req: Request, res: Response) => {
 
 // Retrieves a list of all products (bikes)
 const getAllProducts = catchAsync(async (req: Request, res: Response) => {
-  const validSearchTerms = ['name', 'brand', 'category'];
-
-  // Getting search term & value
-  const tempSearchTerm = (req.query.searchTerm || '')?.toString()?.trim();
-  const searchTerm = validSearchTerms?.includes(tempSearchTerm)
-    ? tempSearchTerm
-    : '';
-  const searchValue = searchTerm
-    ? (req.query.searchValue || '')?.toString()?.trim()
-    : '';
+  const search = (req.query.search || '')?.toString()?.trim();
 
   // Getting filters
   const category = req.query.category
@@ -127,8 +118,7 @@ const getAllProducts = catchAsync(async (req: Request, res: Response) => {
 
   // Fetch products with all filters
   const results = await ProductServices.getAllProductsFromDB({
-    searchTerm,
-    searchValue,
+    search,
     category,
     brand,
     minPrice,

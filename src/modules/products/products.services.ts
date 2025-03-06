@@ -33,8 +33,7 @@ const updateProductIntoDB = async (
 
 // For getting all the products from database
 const getAllProductsFromDB = async ({
-  searchTerm,
-  searchValue,
+  search,
   category,
   brand,
   minPrice,
@@ -42,15 +41,19 @@ const getAllProductsFromDB = async ({
   inStock,
   limit,
   page,
-  sortBy,
-  sortOrder,
+  sortBy = 'createdAt',
+  sortOrder = 'desc',
 }: TProductsQuery) => {
   // Base query
   const query: Record<string, any> = {};
 
-  // Apply search filtering
-  if (searchTerm && searchValue) {
-    query[searchTerm] = { $regex: searchValue, $options: 'i' };
+  // Apply search filtering on `name`, `brand`, or `category`
+  if (search) {
+    query.$or = [
+      { name: { $regex: search, $options: 'i' } },
+      { brand: { $regex: search, $options: 'i' } },
+      { category: { $regex: search, $options: 'i' } },
+    ];
   }
 
   // Apply additional filters
