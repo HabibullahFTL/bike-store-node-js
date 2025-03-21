@@ -10,6 +10,7 @@ const authGuard = (...userRoles: TUserRole[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     // Extracting access token
     const access_token = req?.headers?.authorization?.split('Bearer ')?.[1];
+    console.log({ access_token });
 
     if (!access_token) {
       throw new AppError(httpStatus.UNAUTHORIZED, 'You are unauthorized.');
@@ -17,6 +18,7 @@ const authGuard = (...userRoles: TUserRole[]) => {
 
     // Verifying access token
     const verifiedTokenPayload = verifyJwtToken(access_token!, 'access');
+    console.log({ verifiedTokenPayload });
 
     if (!verifiedTokenPayload?.email || !verifiedTokenPayload?._id) {
       throw new AppError(httpStatus.UNAUTHORIZED, 'You are unauthorized.');

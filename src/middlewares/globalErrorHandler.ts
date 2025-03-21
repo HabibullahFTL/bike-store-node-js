@@ -14,8 +14,17 @@ const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
   let stack = error?.stack || '';
   let errorSources = [{ path: '', message }];
 
+  if (error?.name === 'TokenExpiredError') {
+    sendResponse(res, {
+      success: false,
+      statusCode: httpStatus.UNAUTHORIZED,
+      message,
+      stack,
+      errorSources,
+    });
+  }
   // For AppError
-  if (error instanceof AppError) {
+  else if (error instanceof AppError) {
     statusCode = error?.statusCode || statusCode;
     errorSources = [{ path: '', message }];
 
