@@ -107,8 +107,25 @@ const verifyPaymentWithGateway = async (transactionId: string) => {
   return orderData;
 };
 
-const getAllOrdersFromDB = async () => {
-  return await OrderModel.find().sort({ createdAt: -1 });
+const getAllOrdersFromDB = async ({
+  limit,
+  page,
+}: {
+  limit: number;
+  page: number;
+}) => {
+  const skip = (page - 1) * limit;
+
+  const orders = await OrderModel.find()
+    .sort({ createdAt: -1 })
+    .populate('product')
+    .skip(skip)
+    .limit(limit);
+
+  const totalItems = await OrderModel.countDocuments();
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return { orders, meta: { page, limit, totalItems, totalPages } };
 };
 
 const getOrderDetailsFromDB = async (orderId: string) => {

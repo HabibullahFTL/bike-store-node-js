@@ -78,13 +78,20 @@ const verifyPayment = catchAsync(async (req: Request, res: Response) => {
 
 // Retrieves a list of all orders
 const getAllOrders = catchAsync(async (req: Request, res: Response) => {
-  const result = await OrderServices.getAllOrdersFromDB();
+  // Getting limit & page
+  const defaultLimit = 10;
+  const defaultPage = 1;
+  const limit = parseInt((req.query.limit || defaultLimit)?.toString());
+  const page = parseInt((req.query.page || defaultPage)?.toString());
+
+  const result = await OrderServices.getAllOrdersFromDB({ limit, page });
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Retrieved all the orders.',
-    data: result,
+    data: result?.orders,
+    meta: result?.meta,
   });
 });
 
