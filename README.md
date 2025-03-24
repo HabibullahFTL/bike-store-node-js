@@ -5,7 +5,7 @@ An Express application built with TypeScript, integrating MongoDB via Mongoose t
 ## Deployed live link
 
 You can access the live version of the Bike Store API at:  
-[https://your-deployed-link.com](https://your-deployed-link.com)
+https://bike-store-test.vercel.app/
 
 ## Features
 
@@ -57,7 +57,7 @@ You can access the live version of the Bike Store API at:
 
 ```bash
 git clone <repository-link>
-cd bike-store-api
+cd bike-store-node-js
 ```
 
 2. Install Dependencies
@@ -83,4 +83,4 @@ yarn dev
 
 5. Access API
 
-   API will be running at http://localhost:3500.
+   API will be running at http://localhost:3500
