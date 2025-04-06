@@ -38,6 +38,41 @@ const orderSchema = new Schema<TOrder>(
       type: String,
       required: [true, 'Total price is required'],
     },
+    status: {
+      type: String,
+      enum: [
+        'Processing',
+        'Paid',
+        'Shipped',
+        'Delivered',
+        'Cancelled',
+        'Refunded',
+      ],
+      default: 'Processing',
+    },
+    timeLine: {
+      type: [
+        {
+          status: {
+            type: String,
+            enum: [
+              'Processing',
+              'Paid',
+              'Shipped',
+              'Delivered',
+              'Cancelled',
+              'Refunded',
+            ],
+            default: 'Processing',
+          },
+          date_time: {
+            type: Date,
+            default: Date.now,
+          },
+        },
+      ],
+      required: [true, 'Time line is required'],
+    },
     transaction: {
       id: String,
       checkoutURL: String,

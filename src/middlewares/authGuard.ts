@@ -18,7 +18,7 @@ const authGuard = (...userRoles: TUserRole[]) => {
 
     // Verifying access token
     const verifiedTokenPayload = verifyJwtToken(access_token!, 'access');
-    console.log({ verifiedTokenPayload });
+    console.log({ verifiedTokenPayload, url: req.url });
 
     if (!verifiedTokenPayload?.email || !verifiedTokenPayload?._id) {
       throw new AppError(httpStatus.UNAUTHORIZED, 'You are unauthorized.');

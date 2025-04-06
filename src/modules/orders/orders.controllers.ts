@@ -5,7 +5,7 @@ import { catchAsync } from '../../utils/catchAsync';
 import { sendResponse } from '../../utils/response-generator';
 import ProductServices from '../products/products.services';
 import { TUser } from '../user/user.interfaces';
-import { TCreateOrderData } from './orders.interfaces';
+import { TCreateOrderData, TOrderStatus } from './orders.interfaces';
 import OrderServices from './orders.services';
 
 // Handles the creation of a new order
@@ -35,6 +35,13 @@ const createOrder = catchAsync(async (req: Request, res: Response) => {
     shippingAddress: req?.body?.shippingAddress,
     phone: req?.body?.phone,
     user: req?.user?._id || '',
+    status: 'Processing',
+    timeLine: [
+      {
+        status: 'Processing',
+        date_time: new Date(),
+      },
+    ],
   };
 
   // Creating an order
@@ -73,6 +80,75 @@ const verifyPayment = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.CREATED,
     data: result,
     message: 'Order created successfully',
+  });
+});
+
+// Handles the order status update
+const updateOrderStatus = catchAsync(async (req: Request, res: Response) => {
+  const { orderId } = req.params;
+  const { status } = req.body;
+
+  // Checking if order is found
+  const order = await OrderServices.getOrderDetailsFromDB(orderId);
+  if (!order) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Order not found');
+  }
+
+  const timeLine = order?.timeLine || [];
+  const newTimeLineItem = { status, date_time: new Date() };
+  const currentStatus = order.status;
+
+  // Allowed statuses
+  const validStatuses: TOrderStatus[] = [
+    'Shipped',
+    'Delivered',
+    'Cancelled',
+    'Refunded',
+  ];
+  if (!validStatuses.includes(status)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `Invalid status. Allowed statuses are: ${validStatuses.join(', ')}`
+    );
+  }
+
+  // Prevent updates if already Delivered or Refunded
+  if (['Delivered', 'Refunded'].includes(currentStatus)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `Order is already ${currentStatus.toLowerCase()}. Status cannot be updated.`
+    );
+  }
+
+  // Validate allowed transitions
+  const transitionRules: Record<string, string[]> = {
+    Paid: ['Shipped', 'Cancelled'],
+    Shipped: ['Delivered', 'Cancelled'],
+    Cancelled: ['Refunded'],
+  };
+
+  const allowedNextStatuses = transitionRules[currentStatus] || [];
+
+  if (!allowedNextStatuses.includes(status)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `Invalid transition from ${currentStatus} to ${status}. Allowed: ${
+        allowedNextStatuses.join(', ') || 'none'
+      }`
+    );
+  }
+
+  // Perform update
+  const result = await OrderServices.updateOrderStatusInDB(orderId, status, [
+    ...timeLine,
+    newTimeLineItem,
+  ]);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Order status updated successfully',
+    data: result,
   });
 });
 
@@ -131,6 +207,7 @@ const OrderControllers = {
   getAllOrders,
   getOrderDetails,
   verifyPayment,
+  updateOrderStatus,
 };
 
 export default OrderControllers;

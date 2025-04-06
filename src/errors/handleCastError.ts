@@ -6,7 +6,7 @@ export const handleCastError = (
   error: mongoose.Error.CastError
 ): TErrorResponse => {
   const stack = error?.stack || '';
-  const message = error.message;
+  const message = `Invalid value for '${error.path}': '${error.value}'.`;
   const errorSources = [{ path: '', message }];
 
   return {

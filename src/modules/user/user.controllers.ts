@@ -1,5 +1,6 @@
 import { RequestHandler } from 'express';
 import httpStatus from 'http-status';
+import AppError from '../../errors/AppError';
 import { catchAsync } from '../../utils/catchAsync';
 import { sendResponse } from '../../utils/response-generator';
 import { USER_ROLES } from './user.constrants';
@@ -51,6 +52,74 @@ const getAllUsers = catchAsync(async (req, res) => {
   });
 });
 
-const UserControllers = { createAdmin, customerRegistration, getAllUsers };
+// Handle blocking a user
+const blockUser = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+
+  console.log('Blocking', { userId });
+
+  const user = await UserServices.changeUserStatusInDB(userId, true);
+
+  // Check if the user exists
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found.');
+  }
+
+  // Check if the user is already blocked
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    data: user,
+    message: 'User blocked successfully.',
+  });
+});
+
+// Handle unblocking a user
+const unblockUser = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const user = await UserServices.changeUserStatusInDB(userId, false);
+
+  // Check if the user exists
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found.');
+  }
+
+  // Check if the user is already blocked
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    data: user,
+    message: 'User blocked successfully.',
+  });
+});
+
+// Handle changing role of a user
+const changeRole = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const { role } = req.body;
+  const user = await UserServices.changeUserRoleInDB(userId, role);
+
+  // Check if the user exists
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found.');
+  }
+
+  // Check if the user is already blocked
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    data: user,
+    message: 'User role changed successfully.',
+  });
+});
+
+const UserControllers = {
+  createAdmin,
+  customerRegistration,
+  getAllUsers,
+  blockUser,
+  unblockUser,
+  changeRole,
+};
 
 export default UserControllers;

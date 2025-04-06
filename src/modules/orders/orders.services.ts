@@ -71,16 +71,37 @@ const createOrderInDB = async (
 const verifyPaymentWithGateway = async (transactionId: string) => {
   const verifiedPayment = await verifyPaymentAsync(transactionId);
 
-  let orderData;
+  let orderData = await OrderModel.findOne({
+    'transaction.id': transactionId,
+  });
 
+  // If order is not found
+  if (!orderData) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Order not found');
+  }
+
+  // If the payment is already verified and the payment status is already paid then returning the order data
+  if (orderData?.transaction?.payment_status === 'Paid') {
+    return orderData;
+  }
+
+  // If the payment is verified and the sp_code is 1000, updating order data
   if (
     verifiedPayment?.length &&
     verifiedPayment?.[0] &&
     Number(verifiedPayment?.[0]?.sp_code) == 1000
   ) {
-    orderData = await OrderModel.findOneAndUpdate(
-      { 'transaction.id': transactionId },
+    const timeLine = orderData?.timeLine || [];
+    const isPaidTimeLine = timeLine.find((item) => item.status === 'paid');
+    const paidTimeLine = {
+      status: 'Paid',
+      date_time: new Date(),
+    };
+
+    orderData = await OrderModel.findByIdAndUpdate(
+      orderData?._id,
       {
+        timeLine: isPaidTimeLine ? timeLine : [...timeLine, paidTimeLine],
         'transaction.checkoutURL': '',
         'transaction.bank_status': verifiedPayment?.[0]?.bank_status,
         'transaction.sp_code': verifiedPayment?.[0]?.sp_code,
@@ -104,6 +125,25 @@ const verifyPaymentWithGateway = async (transactionId: string) => {
     throw new AppError(httpStatus.BAD_REQUEST, 'Invalid transaction id');
   }
 
+  return orderData;
+};
+
+const updateOrderStatusInDB = async (
+  orderId: string,
+  status: string,
+  timeLine: { status: string; date_time: Date }[]
+) => {
+  const orderData = await OrderModel.findByIdAndUpdate(
+    orderId,
+    {
+      status,
+      timeLine,
+    },
+    { new: true }
+  );
+  if (!orderData) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Order not found');
+  }
   return orderData;
 };
 
@@ -151,6 +191,7 @@ const OrderServices = {
   getOrderDetailsFromDB,
   calculateRevenueFromDB,
   verifyPaymentWithGateway,
+  updateOrderStatusInDB,
 };
 
 export default OrderServices;

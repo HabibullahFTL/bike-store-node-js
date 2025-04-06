@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { orderStatuses } from './orders.constrants';
 
 export const orderValidationSchema = z.object({
   body: z.object({
@@ -16,5 +17,11 @@ export const orderValidationSchema = z.object({
     shippingAddress: z
       .string({ required_error: 'Shipping address is required' })
       .min(2, 'Minimum 2 character is required'),
+  }),
+});
+
+export const orderStatusUpdateValidationSchema = z.object({
+  body: z.object({
+    status: z.enum(orderStatuses, { required_error: 'Status is required' }),
   }),
 });
