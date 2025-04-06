@@ -5,7 +5,7 @@ An Express application built with TypeScript, integrating MongoDB via Mongoose t
 ## Deployed live link
 
 You can access the live version of the Bike Store API at:  
-https://bike-store-test.vercel.app/
+https://bike-store-be.vercel.app/
 
 ## Features
 

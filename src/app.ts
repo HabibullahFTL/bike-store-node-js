@@ -13,7 +13,7 @@ const app = express();
 // Middleware to parse incoming JSON requests
 app.use(
   cors({
-    origin: ['http://localhost:5173'],
+    origin: ['http://localhost:5173', 'https://bike-store-fe.vercel.app'],
     credentials: true,
   })
 );
