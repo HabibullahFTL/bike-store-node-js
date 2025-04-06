@@ -39,6 +39,7 @@ OrdersRouter.get(
   authGuard(USER_ROLES.CUSTOMER, USER_ROLES.ADMIN),
   OrderControllers.getAllOrders
 );
+
 // Route to get order details by id
 OrdersRouter.get(
   '/:orderId',

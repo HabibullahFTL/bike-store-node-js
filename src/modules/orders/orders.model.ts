@@ -1,4 +1,5 @@
 import { model, Schema, Types } from 'mongoose';
+import { orderStatuses } from './orders.constrants';
 import { TOrder } from './orders.interfaces';
 
 // Schema for orders
@@ -40,14 +41,7 @@ const orderSchema = new Schema<TOrder>(
     },
     status: {
       type: String,
-      enum: [
-        'Processing',
-        'Paid',
-        'Shipped',
-        'Delivered',
-        'Cancelled',
-        'Refunded',
-      ],
+      enum: orderStatuses,
       default: 'Processing',
     },
     timeLine: {
@@ -55,14 +49,7 @@ const orderSchema = new Schema<TOrder>(
         {
           status: {
             type: String,
-            enum: [
-              'Processing',
-              'Paid',
-              'Shipped',
-              'Delivered',
-              'Cancelled',
-              'Refunded',
-            ],
+            enum: orderStatuses,
             default: 'Processing',
           },
           date_time: {

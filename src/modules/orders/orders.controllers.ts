@@ -5,6 +5,7 @@ import { catchAsync } from '../../utils/catchAsync';
 import { sendResponse } from '../../utils/response-generator';
 import ProductServices from '../products/products.services';
 import { TUser } from '../user/user.interfaces';
+import { orderStatusTransitions } from './orders.constrants';
 import { TCreateOrderData, TOrderStatus } from './orders.interfaces';
 import OrderServices from './orders.services';
 
@@ -112,22 +113,16 @@ const updateOrderStatus = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
-  // Prevent updates if already Delivered or Refunded
-  if (['Delivered', 'Refunded'].includes(currentStatus)) {
+  // Prevent updates if already Refunded
+  if (currentStatus === 'Refunded') {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      `Order is already ${currentStatus.toLowerCase()}. Status cannot be updated.`
+      `Order is already refunded. Status cannot be updated.`
     );
   }
 
-  // Validate allowed transitions
-  const transitionRules: Record<string, string[]> = {
-    Paid: ['Shipped', 'Cancelled'],
-    Shipped: ['Delivered', 'Cancelled'],
-    Cancelled: ['Refunded'],
-  };
-
-  const allowedNextStatuses = transitionRules[currentStatus] || [];
+  // Validate allowed transitions using the exported transition object
+  const allowedNextStatuses = orderStatusTransitions[currentStatus] || [];
 
   if (!allowedNextStatuses.includes(status)) {
     throw new AppError(
@@ -160,7 +155,13 @@ const getAllOrders = catchAsync(async (req: Request, res: Response) => {
   const limit = parseInt((req.query.limit || defaultLimit)?.toString());
   const page = parseInt((req.query.page || defaultPage)?.toString());
 
-  const result = await OrderServices.getAllOrdersFromDB({ limit, page });
+  const userId = req?.user?.role === 'admin' ? undefined : req?.user?._id;
+
+  const result = await OrderServices.getAllOrdersFromDB({
+    limit,
+    page,
+    userId,
+  });
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

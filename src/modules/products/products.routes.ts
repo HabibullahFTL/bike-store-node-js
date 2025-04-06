@@ -17,13 +17,15 @@ ProductsRouter.post(
   authGuard(USER_ROLES.ADMIN),
   ProductControllers.createProduct
 );
+
 // Route to update a new product
-ProductsRouter.put(
+ProductsRouter.patch(
   '/:productId',
   validateRequest(updateProductValidationSchema),
   authGuard(USER_ROLES.ADMIN),
   ProductControllers.updateProduct
 );
+
 // Route to delete specific product
 ProductsRouter.delete(
   '/:productId',

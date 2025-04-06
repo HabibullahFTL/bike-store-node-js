@@ -101,6 +101,7 @@ const verifyPaymentWithGateway = async (transactionId: string) => {
     orderData = await OrderModel.findByIdAndUpdate(
       orderData?._id,
       {
+        status: isPaidTimeLine ? orderData?.status : paidTimeLine.status,
         timeLine: isPaidTimeLine ? timeLine : [...timeLine, paidTimeLine],
         'transaction.checkoutURL': '',
         'transaction.bank_status': verifiedPayment?.[0]?.bank_status,
@@ -150,19 +151,27 @@ const updateOrderStatusInDB = async (
 const getAllOrdersFromDB = async ({
   limit,
   page,
+  userId,
 }: {
   limit: number;
   page: number;
+  userId?: string;
 }) => {
   const skip = (page - 1) * limit;
 
-  const orders = await OrderModel.find()
+  // Build the query to filter by userId if it's provided
+  const query: Record<string, any> = {};
+  if (userId) {
+    query.user = userId;
+  }
+
+  const orders = await OrderModel.find(query)
     .sort({ createdAt: -1 })
     .populate('product')
     .skip(skip)
     .limit(limit);
 
-  const totalItems = await OrderModel.countDocuments();
+  const totalItems = await OrderModel.countDocuments(query); // Use the same query for total count
   const totalPages = Math.ceil(totalItems / limit);
 
   return { orders, meta: { page, limit, totalItems, totalPages } };
