@@ -9,6 +9,27 @@ https://bike-store-test.vercel.app/
 
 ## Features
 
+### Users
+
+1. Get all users
+   - Endpoint: `GET` `/api/user`
+   - Description: Retrieves a list of all registered users.
+2. Create a new admin
+   - Endpoint: `POST` `/api/user/create-admin`
+   - Description: Creates a new admin user.
+3. Register a customer
+   - Endpoint: `POST` `/api/user/customer-registration`
+   - Description: Registers a new customer account.
+4. Block a user
+   - Endpoint: `PATCH` `/api/user/block-user/:userId`
+   - Description: Blocks a user by their ID, preventing access to protected routes.
+5. Unblock a user
+   - Endpoint: `PATCH` `/api/user/unblock-user/:userId`
+   - Description: Unblocks a previously blocked user by their ID.
+6. Change user role
+   - Endpoint: `PATCH` `/api/user/change-role/:userId`
+   - Description: Changes the role of a user (e.g., from customer to admin).
+
 ### Products
 
 1. Creating a product (Bike)
@@ -32,7 +53,19 @@ https://bike-store-test.vercel.app/
 1. Create an order
    - Endpoint: `POST` `/api/orders`
    - Places an order for a bike, reduces stock, and handles insufficient stock cases.
-2. Calculate Revenue
+2. Verify payment
+   - Endpoint: `GET` `/api/orders/verify-payment`
+   - Verifies payment with payment gateway and update transaction information in order data
+3. Update order status
+   - Endpoint: `PATCH` `/api/orders/update-status/:orderId`
+   - Updates next status based on current status of a order
+4. Get all orders
+   - Endpoint: `GET` `/api/orders`
+   - Gets products with pagination and filtering functionalities
+5. Get single order
+   - Endpoint: `GET` `/api/orders/:orderId`
+   - Gets a single order by order id
+6. Calculate Revenue
    - Endpoint: `GET` `/api/orders/revenue`
    - Aggregates total revenue from all orders.
 
@@ -43,6 +76,7 @@ https://bike-store-test.vercel.app/
 - **ORM**: Mongoose
 - **Language**: TypeScript
 - **Data Validation**: Zod
+- **Payment Gateway**: Surjo Pay
 
 ## Setup Instructions (For running the project locally)
 
@@ -68,11 +102,26 @@ yarn install
 
 3. Environment Variables
 
-   Create an `.env` file and then add the environment variables.
+   Create an `.env` file and then add the environment variables with proper values.
 
 ```env
-PORT = 3500
-DATABASE_URL = "<your_database_url>"
+PORT =
+DATABASE_URL =
+
+PASSWORD_HASH_SALT=
+
+JWT_ACCESS_TOKEN_SECRET=
+JWT_ACCESS_TOKEN_EXPIRES_IN=
+
+JWT_REFRESH_TOKEN_SECRET=
+JWT_REFRESH_TOKEN_EXPIRES_IN=
+
+
+SP_ENDPOINT=
+SP_USERNAME=
+SP_PASSWORD=
+SP_PREFIX=
+SP_RETURN_URL=
 ```
 
 4. Start the server
